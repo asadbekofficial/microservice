@@ -8,37 +8,40 @@ import { Model } from "mongoose";
 @Injectable()
 export class ProductService {
   constructor(
-    @InjectModel(Product.name) private productModel: Model<Product>
-  ) {}
+    @InjectModel(Product.name) private productModel: Model<Product>) { }
   async create(createProductDto: CreateProductDto): Promise<Product> {
     return this.productModel.create(createProductDto);
   }
 
-  async findAll(): Promise<Product[]> {
+  async findAll(data: any): Promise<Product[]> {
     const product = await this.productModel.find().exec();
-    return product;
+    return data
   }
 
   async findOne(id: number): Promise<Product> {
-    const product = await this.productModel.findOne({ _id: id });
-    if (!product) throw new NotFoundException("Product not found");
-    return product;
+    const product = await this.productModel.find()
+    const foundedProduct = product.find((item) => item.id === id)
+    if (!foundedProduct) throw new NotFoundException("Product not found");
+    return foundedProduct
   }
 
-  async update(
-    id: number,
-    updateProductDto: UpdateProductDto
-  ): Promise<{ message: string }> {
-    const product = await this.productModel.findOne({ _id: id });
-    if (!product) throw new NotFoundException("Product not found");
-    await this.productModel.updateOne({ id }, updateProductDto);
-    return { message: "Updated product" };
+  async update(data: any) {
+    const product = await this.productModel.find()
+    const foundedProduct = product.find((item) => item.id === +data.id)
+    if (!foundedProduct) throw new NotFoundException("Product not found")
+
+    await this.productModel.updateOne({ _id: foundedProduct._id }, data);
+
+
+    return{
+      message: "Product updated",
+    };
   }
 
-  async remove(id: number): Promise<{ message: string }> {
-    const product = await this.productModel.findOne({ _id: id });
-    if (!product) throw new NotFoundException("Product not found");
-    await this.productModel.deleteOne({ id });
-    return { message: "Deleted product" };
+  async remove(id: number) {
+     const product = await this.productModel.find()
+    const foundedProduct = product.find((item) => item.id === +id)
+    if (!foundedProduct) throw new NotFoundException("Product not found")
+    return this.productModel.deleteOne({ _id: foundedProduct._id});
   }
 }
